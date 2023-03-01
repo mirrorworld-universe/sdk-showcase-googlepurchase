@@ -78,7 +78,7 @@ const server = http.createServer(async (req, res) => {
             res.write(resStr);
             res.end();
         }
-    }else if(req.url === "/"+urlItemDrop){
+    }else if(req.url === "/"+urlItemDrop){ 
         res.statusCode = codeSuccess
         let wallet = param["wallet"];
         let itemID = param["itemID"];
