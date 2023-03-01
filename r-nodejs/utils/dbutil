@@ -1,0 +1,94 @@
+//需要在文件夹下载mysql模块
+//npm install mysql
+const mysql=require('mysql')
+ 
+var coonnection = null;
+
+var initDB = function(){
+    coonnection = mysql.createConnection({
+        host:'mysql',
+        user:'user_rct',
+        password:'12345678',
+        database:'showcase'
+    })
+}
+module.exports.initDB = initDB
+
+var queryBagItems = async function(walletString){
+    if(coonnection == null){
+        console.warn("please init connection first.")
+        return;
+    }
+    let result = await queryResult(walletString);
+
+    if(!result){
+        return await insertBagInfo(walletString,"")
+    }else if(result.count === 0){
+        return await insertBagInfo(walletString,"")
+    }
+    else{
+        return result;
+    }
+}
+module.exports.queryBagItems = queryBagItems
+
+var updateBagItems = async function(walletString,newStr){
+    if(coonnection == null){
+        console.warn("please init connection first.")
+        return;
+    }
+    let sql = "update player_bag set items='"+newStr+"' where wallet='"+walletString+"'";
+    let result = await querySql(sql);
+
+    if(!result){
+        return await insertBagInfo(walletString,newStr)
+    }
+}
+module.exports.updateBagItems = updateBagItems
+
+var closeDB = function(){
+    connection.end()
+}
+
+async function queryResult(walletString){
+    return new Promise((resolve, reject)=> {
+        let sql = "select items from player_bag where wallet='"+walletString+"'"
+        coonnection.query(sql,function (err,result){
+            if(!err){
+                console.log("dbutil query result:" + result)
+                resolve()
+            }else{
+                console.error("数据操作错误:"+err)
+                // reject()
+            }
+        })
+    })
+}
+async function querySql(sql){
+    return new Promise((resolve, reject)=> {
+        coonnection.query(sql,function (err,result){
+            if(!err){
+                console.log("dbutil query result:" + result)
+                resolve()
+            }else{
+                console.error("数据操作错误:"+err)
+                // reject()
+            }
+        })
+    })
+}
+
+var insertBagInfo = async function(walletString,itemsStr){
+    return new Promise((resolve, reject)=> {
+        let sql = "insert into player_bag (wallet,items) values ('"+walletString+"','"+itemsStr+"')"
+        coonnection.query(sql,function (err,result){
+            if(!err){
+                console.log("dbutil query result:" + result)
+                resolve(result)
+            }else{
+                console.error("数据操作错误:"+err)
+                // reject(err)
+            }
+        })
+    })
+}

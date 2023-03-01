@@ -1,0 +1,39 @@
+
+services:
+  mysql:
+    build: r-mysql #showcase-server-image-v1-mysql
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE} #默认创建数据库
+      - MYSQL_USER=${MYSQL_USER} #创建用户
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD} #用户密码
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD} #root 用户秘密
+      
+      - TZ=${WORKSPACE_TIMEZONE}
+    command: --default-authentication-plugin=mysql_native_password
+    # networks:
+    #   - default
+    # volumes:
+    #   # - ./mysql:/var/lib/mysql
+    #   - ./mysql/dbs:/dbs
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    restart: unless-stopped
+  app:
+    build: r-nodejs #showcase-server-image-v1-app
+    # volumes:
+    #   - ./r-nodejs:/app
+    environment:
+      - TZ=${WORKSPACE_TIMEZONE}
+      - DB_HOSTNAME=mysql
+    links:
+      - mysql:mysql
+    # networks:
+    #   - default
+    depends_on: 
+        - mysql
+    ports:
+      - 8080:8080
+      - 3000:3000
+    # command: ["./wait-for-it.sh", "mysql:3306"]
